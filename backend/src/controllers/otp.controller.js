@@ -8,7 +8,6 @@ import OTP from "../models/userOTP.model.js";
 import mobileOTP from "../models/mobileOTP.model.js";
 import { generateOTPToken } from "../utils/auth.js";
 import { verifyHashedData } from "../utils/hashData.js";
-import bcrypt from "bcrypt";
 
 export const verifyOTP = asyncHandler(async (req, res) => {
   const { token, otp } = req.body;
@@ -21,7 +20,7 @@ export const verifyOTP = asyncHandler(async (req, res) => {
       email: decoded.email || decoded.userData.email,
     });
 
-    const match = await bcrypt.compare(otp, userOTP.otp);
+    const match = await verifyHashedData(otp, userOTP.otp);
     if (!match) {
       throw new ApiError(400, "Invalid OTP.");
     }
@@ -106,9 +105,9 @@ export const verifyMobileOTP = asyncHandler(async (req, res) => {
   } catch (error) {
     throw new ApiError(400, "Invalid token.");
   }
-  
+
   const userOTP = await mobileOTP.findOne({ contact: decoded.contact });
-  const match = await bcrypt.compare(otp, userOTP.otp);
+  const match = await verifyHashedData(otp, userOTP.otp);
   if (!match) {
     throw new ApiError(400, "Invalid OTP.");
   }

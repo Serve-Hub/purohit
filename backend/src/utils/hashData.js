@@ -9,7 +9,11 @@ const hashData = async (data, saltRounds = 10) => {
   }
 };
 
-const verifyHashedData = asyncHandler(async (unHashed, hashed) => {
-  return await bcrypt.compare(unHashed, hashed);
-});
+const verifyHashedData = async (unHashed, hashed) => {
+  try {
+    return await bcrypt.compare(unHashed, hashed);
+  } catch (error) {
+    throw new Error("Failed to verify hashed data: " + error.message);
+  }
+};
 export { hashData, verifyHashedData };

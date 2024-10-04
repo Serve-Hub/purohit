@@ -216,8 +216,8 @@ export const resetPassword = asyncHandler(async (req, res) => {
   const userOTP = await OTP.findOne({
     email: trimmedEmail,
   });
-
-  if (verifyHashedData(otp, userOTP.otp)) {
+  const match = await verifyHashedData(otp, userOTP.otp);
+  if (!match) {
     throw new ApiError(400, "Invalid OTP.");
   }
   const hashedPassword = await hashData(newPassword);
