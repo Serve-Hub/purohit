@@ -8,6 +8,7 @@ import { generateOTPToken } from "../utils/auth.js";
 import { verifyHashedData, hashData } from "../utils/hashData.js";
 import bcrypt from "bcrypt";
 import OTP from "../models/userOTP.model.js";
+import sendMessage from "../utils/messageSender.js";
 
 const generateAccessAndRefreshTokens = async (userId) => {
   try {
@@ -68,14 +69,49 @@ const registerUser = asyncHandler(async (req, res) => {
     avatar: avatarLocalPath,
   });
 
-  await sendEmail({ email });
-
   return res
     .status(201)
     .json(new ApiResponse(201, { token }, "Registration Success!"));
 });
-
 export default registerUser;
+
+export const emailRegister = asyncHandler(async (req, res) => {
+  const { token, email } = req.body;
+  const trimmedEmail = email?.trim();
+
+  if (!trimmedEmail || !token) {
+    throw new ApiError(400, "All fields are required and cannot be empty.");
+  }
+
+  const existingUser = await User.findOne({ email: trimmedEmail });
+
+  //if email already exists throw error
+  if (existingUser) {
+    throw new ApiError(409, "User with contact already exists");
+  }
+
+  await sendEmail({ email: trimmedEmail });
+
+  return res.status(201).json(new ApiResponse(201, {}, "OTP sent Success!"));
+});
+export const mobileRegister = asyncHandler(async (req, res) => {
+  const { token, contact } = req.body;
+  const trimmedContact = contact?.trim();
+
+  if (!trimmedContact || !token) {
+    throw new ApiError(400, "All fields are required and cannot be empty.");
+  }
+
+  const existingUser = await User.findOne({ contact: trimmedContact });
+
+  //if email already exists throw error
+  if (existingUser) {
+    throw new ApiError(409, "User with contact already exists");
+  }
+  await sendMessage(trimmedContact);
+
+  return res.status(201).json(new ApiResponse(201, {}, "OTP sent Success!"));
+});
 
 export const loginUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;

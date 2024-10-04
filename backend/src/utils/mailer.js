@@ -2,6 +2,7 @@ import nodemailer from "nodemailer";
 import { google } from "googleapis";
 import ApiError from "./ApiError.js";
 import OTP from "../models/userOTP.model.js";
+
 import { hashData } from "../utils/hashData.js";
 
 // Configure OAuth2 client using environment variables
@@ -45,7 +46,7 @@ export const sendEmail = async ({ email, otp }) => {
     const transport = await createTransport();
     const otp = `${Math.floor(1000 + Math.random() * 9000)}`;
     await OTP.deleteMany({ email });
-    console.log(otp);
+   
 
     // Send verification email
     await sendVerificationEmail(transport, email, otp);

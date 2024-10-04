@@ -1,7 +1,6 @@
 import { Schema, model } from "mongoose";
-
-const emailOTPSchema = new Schema({
-  email: {
+const phoneOTPSchema = new Schema({
+  contact: {
     type: String,
     unique: true,
   },
@@ -9,7 +8,6 @@ const emailOTPSchema = new Schema({
   createdAt: Date,
   expiresAt: Date,
 });
+const mobileOTP = model("mobileOTP", phoneOTPSchema);
 
-const OTP = model("OTP", emailOTPSchema);
-
-export default OTP;
+export default mobileOTP;

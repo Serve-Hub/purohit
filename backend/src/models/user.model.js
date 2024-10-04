@@ -38,9 +38,10 @@ const userSchema = new Schema(
     },
     contact: {
       type: Number,
+      unique: true,
       required: true,
       validate: {
-        validator: (v) => /^[0-9]{10}$/.test(v), // Adjust the regex as needed
+        validator: (v) => /^\+?[0-9]{10,15}$/.test(v), // Adjust the regex as needed
         message: (props) => `${props.value} is not a valid phone number!`,
       },
     },
