@@ -21,11 +21,11 @@ const userSchema = new Schema(
     },
     avatar: {
       type: String,
-      required: true,
+      required: false,
     },
     email: {
       type: String,
-      required: true,
+      required: false,
       trim: true,
       maxLength: 65,
       unique: true,
@@ -37,11 +37,13 @@ const userSchema = new Schema(
       trim: true,
     },
     contact: {
-      type: Number,
-      unique: true,
-      required: true,
+      type: String,
+      required: false,
       validate: {
-        validator: (v) => /^\+?[0-9]{10,15}$/.test(v), // Adjust the regex as needed
+        validator: (v) => {
+          if (!v) return true; // Allow null/undefined values
+          return /^\+?[0-9]{10,15}$/.test(v); // Validate if there's a value
+        },
         message: (props) => `${props.value} is not a valid phone number!`,
       },
     },
@@ -52,7 +54,7 @@ const userSchema = new Schema(
     isAdmin: {
       type: Boolean,
       default: false,
-    },
+    },googleId: { type: String, unique: true },
     // forgotPasswordToken: String,
     // forgotPasswordTokenExpiry: Date,
     // verifyToken: String,

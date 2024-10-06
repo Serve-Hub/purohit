@@ -1,4 +1,4 @@
-import jwt, { decode } from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 import ApiError from "../utils/ApiError.js";
 import { sendEmail } from "../utils/mailer.js";
 import uploadOnCloudinary from "../utils/cloudinary.js";
@@ -6,7 +6,9 @@ import asyncHandler from "../utils/asyncHandler.js";
 import User from "../models/user.model.js";
 import OTP from "../models/userOTP.model.js";
 import mobileOTP from "../models/mobileOTP.model.js";
-import { generateOTPToken } from "../utils/auth.js";
+// import { generateOTPToken } from "../utils/auth.js";
+import bcrypt from "bcrypt";
+
 import { verifyHashedData } from "../utils/hashData.js";
 
 export const verifyOTP = asyncHandler(async (req, res) => {
@@ -19,8 +21,9 @@ export const verifyOTP = asyncHandler(async (req, res) => {
     const userOTP = await OTP.findOne({
       email: decoded.email || decoded.userData.email,
     });
-
-    const match = await verifyHashedData(otp, userOTP.otp);
+    console.log("opt=",otp,"userOTP= ", userOTP.otp)
+    const match =  await bcrypt.compare(otp, userOTP.otp);
+    console.log(match);
     if (!match) {
       throw new ApiError(400, "Invalid OTP.");
     }
@@ -37,15 +40,15 @@ export const verifyOTP = asyncHandler(async (req, res) => {
       firstName: decoded.firstName || decoded.userData.firstName,
       lastName: decoded.lastName || decoded.userData.lastName,
       password: decoded.password || decoded.userData.password,
-      contact: decoded.contact || decoded.userData.contact,
-      avatar: decoded.avatar || decoded.userData.avatar,
+      // contact: decoded.contact || decoded.userData.contact|| null,
+      // avatar: decoded.avatar || decoded.userData.avatar,
       isVerified: true, // Mark the user as verified
     });
 
-    const incomingAvatar = await uploadOnCloudinary(user.avatar);
-    if (!incomingAvatar) {
-      throw new ApiError(400, "Avatar upload failed.");
-    }
+    // const incomingAvatar = await uploadOnCloudinary(user.avatar);
+    // if (!incomingAvatar) {
+    //   throw new ApiError(400, "Avatar upload failed.");
+    // }
     await user.save();
     await OTP.deleteMany({ email: user.email });
     return res
@@ -75,23 +78,24 @@ export const resendOTPCode = asyncHandler(async (req, res) => {
     });
   }
 
-  const userData = {
-    email: decoded.email,
-    firstName: decoded.firstName,
-    lastName: decoded.lastName,
-    password: decoded.password,
-    contact: decoded.contact,
-    avatar: decoded.avatar,
-  };
+  // const userData = {
+  //   email: decoded.email,
+  //   firstName: decoded.firstName,
+  //   lastName: decoded.lastName,
+  //   password: decoded.password,
+  //   contact: decoded.contact,
+  //   // avatar: decoded.avatar,
+  // };
 
-  const newData = generateOTPToken({ userData });
+  // const newData = generateOTPToken({ userData });
   await sendEmail({ email });
   res.status(200).json({
     status: "PENDING",
     message: "OTP resent successfully. Please check your email.",
-    token: newData.token,
+    token: token,
   });
 });
+
 
 export const verifyMobileOTP = asyncHandler(async (req, res) => {
   const { token, otp } = req.body;
@@ -116,18 +120,18 @@ export const verifyMobileOTP = asyncHandler(async (req, res) => {
     throw new ApiError(409, "User with this contact already exists.");
   }
   const user = new User({
-    email: decoded.email,
+    // email: decoded.email,
     firstName: decoded.firstName,
     lastName: decoded.lastName,
     password: decoded.password,
     contact: decoded.contact,
-    avatar: decoded.avatar,
+    // avatar: decoded.avatar,
     isVerified: true,
   });
-  const incomingAvatar = await uploadOnCloudinary(user.avatar);
-  if (!incomingAvatar) {
-    throw new ApiError(400, "Avatar upload failed.");
-  }
+  // const incomingAvatar = await uploadOnCloudinary(user.avatar);
+  // if (!incomingAvatar) {
+  //   throw new ApiError(400, "Avatar upload failed.");
+  // }
   await user.save();
 
   const deletedOTP = await mobileOTP.deleteMany({ contact: decoded.contact });
@@ -155,19 +159,19 @@ export const resendMobileOTP = asyncHandler(async (req, res) => {
       message: "User is already verified. No need to resend OTP.",
     });
   }
-  const userData = {
-    email: decoded.email,
-    firstName: decoded.firstName,
-    lastName: decoded.lastName,
-    password: decoded.password,
-    contact: decoded.contact,
-    avatar: decoded.avatar,
-  };
-  const newData = generateOTPToken({ userData });
+  // const userData = {
+  //   email: decoded.email,
+  //   firstName: decoded.firstName,
+  //   lastName: decoded.lastName,
+  //   password: decoded.password,
+  //   contact: decoded.contact,
+  //   // avatar: decoded.avatar,
+  // };
+  // const newData = generateOTPToken({ userData });
   await sendMessage(decoded.contact);
   res.status(200).json({
     status: "PENDING",
     message: "OTP resent successfully. Please check your phone.",
-    token: newData.token,
+    token: token,
   });
 });

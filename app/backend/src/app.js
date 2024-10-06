@@ -4,6 +4,7 @@ import cookieParser from "cookie-parser";
 
 const app = express();
 
+
 //To make app understand json data
 app.use(express.json({ limit: "10kb" }));
 app.use(cookieParser());

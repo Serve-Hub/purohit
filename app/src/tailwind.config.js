@@ -3,6 +3,7 @@ module.exports = {
   theme: {
     extend: {
       colors: {
+
         'background': '#ffffff',
         'borders': '#d1d5db',
         'input-text': '#6b7280',
@@ -14,17 +15,6 @@ module.exports = {
         'facebook': '#1E3A8A',
         'google': '#E5E7EB',
 
-
-        // 'blue-500': '#4a90e2',
-        // 'blue-700': '#357ABD',
-        // 'blue-link': '#1a73e8',
-        // 'gray-300': '#d1d5db',
-        // 'gray-text': '#6b7280',
-        // 'white': '#ffffff',
-        // 'black': '#000000',
-        // 'red-500': '#f56565',
-        // 'gray-200': '#e5e7eb',
-        // 'border-gray': '#6b7280',
       },
     },
   },
