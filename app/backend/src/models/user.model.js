@@ -54,7 +54,7 @@ const userSchema = new Schema(
     isAdmin: {
       type: Boolean,
       default: false,
-    },googleId: { type: String, unique: true },
+    },
     // forgotPasswordToken: String,
     // forgotPasswordTokenExpiry: Date,
     // verifyToken: String,

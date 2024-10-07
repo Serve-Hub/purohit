@@ -29,19 +29,19 @@ const generateAccessAndRefreshTokens = async (userId) => {
 };
 
 const registerUser = asyncHandler(async (req, res) => {
-  const { email, firstName, lastName, password, contact } = req.body;
+  const { email, firstName, lastName, password, contact, avatar } = req.body;
   const trimmedEmail = email?.trim();
   const trimmedFirstName = firstName?.trim();
   const trimmedLastName = lastName?.trim();
   const trimmedContact = contact?.trim();
-  // const trimmedAvatar = avatar?.trim();
+  const trimmedAvatar = avatar?.trim();
   const hasEmptyField = [
     trimmedEmail,
     trimmedFirstName,
     trimmedLastName,
     password,
     trimmedContact,
-    // trimmedAvatar,
+    trimmedAvatar,
   ].some((field) => field === "");
 
   if (hasEmptyField) {
@@ -54,11 +54,11 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new ApiError(409, "User with email already exists");
   }
   const hashedPassword = await bcrypt.hash(password, 10);
-  // const avatarLocalPath = req.file?.path;
+  const avatarLocalPath = req.file?.path;
 
-  // if (!avatarLocalPath) {
-  //   throw new ApiError(400, "Avatar file is required.");
-  // }
+  if (!avatarLocalPath) {
+    throw new ApiError(400, "Avatar file is required.");
+  }
 
   const { token } = generateOTPToken({
     email: trimmedEmail,
@@ -66,7 +66,7 @@ const registerUser = asyncHandler(async (req, res) => {
     lastName: trimmedLastName,
     password: hashedPassword,
     contact: trimmedContact,
-    // avatar: avatarLocalPath,
+    avatar: avatarLocalPath,
   });
 
   return res
@@ -92,7 +92,7 @@ export const emailRegister = asyncHandler(async (req, res) => {
 
   await sendEmail({ email: trimmedEmail });
 
-  return res.status(201).json(new ApiResponse(201, { token }, "OTP sent Success!"));
+  return res.status(201).json(new ApiResponse(201, {}, "OTP sent Success!"));
 });
 export const mobileRegister = asyncHandler(async (req, res) => {
   const { token, contact } = req.body;
