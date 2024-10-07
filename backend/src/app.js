@@ -20,6 +20,11 @@ app.use(cors(corsOptions));
 
 //routes import
 
+app.use("/",(req,res)=>{
+  res.send("welcome to purohit backend")
+  .json({message:"this is the message"})
+})
+
 import userRouter from "./routes/user.routes.js";
 
 app.use("/api/v1/users", userRouter);
