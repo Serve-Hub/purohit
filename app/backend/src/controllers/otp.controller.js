@@ -1,4 +1,4 @@
-import jwt, { decode } from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 import ApiError from "../utils/ApiError.js";
 import { sendEmail } from "../utils/mailer.js";
 import uploadOnCloudinary from "../utils/cloudinary.js";
@@ -38,14 +38,14 @@ export const verifyOTP = asyncHandler(async (req, res) => {
       lastName: decoded.lastName || decoded.userData.lastName,
       password: decoded.password || decoded.userData.password,
       contact: decoded.contact || decoded.userData.contact,
-      // avatar: decoded.avatar || decoded.userData.avatar,
+      avatar: decoded.avatar || decoded.userData.avatar,
       isVerified: true, // Mark the user as verified
     });
 
-    // const incomingAvatar = await uploadOnCloudinary(user.avatar);
-    // if (!incomingAvatar) {
-    //   throw new ApiError(400, "Avatar upload failed.");
-    // }
+    const incomingAvatar = await uploadOnCloudinary(user.avatar);
+    if (!incomingAvatar) {
+      throw new ApiError(400, "Avatar upload failed.");
+    }
     await user.save();
     await OTP.deleteMany({ email: user.email });
     return res
@@ -81,7 +81,7 @@ export const resendOTPCode = asyncHandler(async (req, res) => {
     lastName: decoded.lastName,
     password: decoded.password,
     contact: decoded.contact,
-    // avatar: decoded.avatar,
+    avatar: decoded.avatar,
   };
 
   const newData = generateOTPToken({ userData });
@@ -121,13 +121,13 @@ export const verifyMobileOTP = asyncHandler(async (req, res) => {
     lastName: decoded.lastName,
     password: decoded.password,
     contact: decoded.contact,
-    // avatar: decoded.avatar,
+    avatar: decoded.avatar,
     isVerified: true,
   });
-  // const incomingAvatar = await uploadOnCloudinary(user.avatar);
-  // if (!incomingAvatar) {
-  //   throw new ApiError(400, "Avatar upload failed.");
-  // }
+  const incomingAvatar = await uploadOnCloudinary(user.avatar);
+  if (!incomingAvatar) {
+    throw new ApiError(400, "Avatar upload failed.");
+  }
   await user.save();
 
   const deletedOTP = await mobileOTP.deleteMany({ contact: decoded.contact });
@@ -161,7 +161,7 @@ export const resendMobileOTP = asyncHandler(async (req, res) => {
     lastName: decoded.lastName,
     password: decoded.password,
     contact: decoded.contact,
-    // avatar: decoded.avatar,
+    avatar: decoded.avatar,
   };
   const newData = generateOTPToken({ userData });
   await sendMessage(decoded.contact);

@@ -7,7 +7,6 @@ import registerUser, {
   resetPassword,
   mobileRegister,
   emailRegister,
-  googleLogin,
 } from "../controllers/user.controller.js";
 import {
   verifyOTP,
@@ -17,22 +16,10 @@ import {
 } from "../controllers/otp.controller.js";
 import verifyJWT from "../middlewares/auth.middleware.js";
 import { upload } from "../middlewares/multer.middleware.js";
-import passport from "passport";
 
 const router = Router();
 
-router
-  .route("/auth/google")
-  .get(passport.authenticate("google", { scope: ["profile", "email"] }));
-
-router
-  .route("/auth/google/callback")
-  .get(
-    passport.authenticate("google", { failureRedirect: "/login" }),
-    googleLogin
-  );
-
-router.route("/register").post(upload.single("avatar"), registerUser);
+router.route("/register").post(registerUser);
 router.route("/register/sendEmailOTP").post(emailRegister);
 router.route("/register/verifyOTP").post(verifyOTP);
 router.route("/register/verifyOTP/resendOTPCode").post(resendOTPCode);

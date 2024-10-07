@@ -25,7 +25,7 @@ const userSchema = new Schema(
     },
     email: {
       type: String,
-      required: true,
+      required: false,
       trim: true,
       maxLength: 65,
       unique: true,
@@ -33,12 +33,11 @@ const userSchema = new Schema(
     },
     password: {
       type: String,
-      required: false,
+      required: [true, "Password is required"],
       trim: true,
     },
     contact: {
-      type: Number,
-      unique: true,
+      type: String,
       required: false,
       validate: {
         validator: (v) => {
@@ -56,7 +55,10 @@ const userSchema = new Schema(
       type: Boolean,
       default: false,
     },
-    googleId: { type: String, unique: true },
+    // forgotPasswordToken: String,
+    // forgotPasswordTokenExpiry: Date,
+    // verifyToken: String,
+    // verifyTokenExpiry: Date,
 
     refreshToken: {
       type: String,
