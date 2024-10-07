@@ -29,19 +29,19 @@ const generateAccessAndRefreshTokens = async (userId) => {
 };
 
 const registerUser = asyncHandler(async (req, res) => {
-  const { email, firstName, lastName, password, contact, avatar } = req.body;
+  const { email, firstName, lastName, password, contact } = req.body;
   const trimmedEmail = email?.trim();
   const trimmedFirstName = firstName?.trim();
   const trimmedLastName = lastName?.trim();
   const trimmedContact = contact?.trim();
-  const trimmedAvatar = avatar?.trim();
+  // const trimmedAvatar = avatar?.trim();
   const hasEmptyField = [
     trimmedEmail,
     trimmedFirstName,
     trimmedLastName,
     password,
     trimmedContact,
-    trimmedAvatar,
+    // trimmedAvatar,
   ].some((field) => field === "");
 
   if (hasEmptyField) {
@@ -54,11 +54,11 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new ApiError(409, "User with email already exists");
   }
   const hashedPassword = await bcrypt.hash(password, 10);
-  const avatarLocalPath = req.file?.path;
+  // const avatarLocalPath = req.file?.path;
 
-  if (!avatarLocalPath) {
-    throw new ApiError(400, "Avatar file is required.");
-  }
+  // if (!avatarLocalPath) {
+  //   throw new ApiError(400, "Avatar file is required.");
+  // }
 
   const { token } = generateOTPToken({
     email: trimmedEmail,
@@ -66,7 +66,7 @@ const registerUser = asyncHandler(async (req, res) => {
     lastName: trimmedLastName,
     password: hashedPassword,
     contact: trimmedContact,
-    avatar: avatarLocalPath,
+    // avatar: avatarLocalPath,
   });
 
   return res
@@ -92,7 +92,9 @@ export const emailRegister = asyncHandler(async (req, res) => {
 
   await sendEmail({ email: trimmedEmail });
 
-  return res.status(201).json(new ApiResponse(201, {}, "OTP sent Success!"));
+  return res
+    .status(201)
+    .json(new ApiResponse(201, { token }, "OTP sent Success!"));
 });
 export const mobileRegister = asyncHandler(async (req, res) => {
   const { token, contact } = req.body;
@@ -320,4 +322,36 @@ export const updateAccountDetails = asyncHandler(async (req, res) => {
   return res
     .status(200)
     .json(new ApiResponse(200, user, "Account details updated successfully."));
+});
+
+export const googleLogin = asyncHandler(async (req, res) => {
+  const user = req.user; // This is set by Passport during Google OAuth
+
+  if (!user) {
+    throw new ApiError(400, "Google login failed");
+  }
+
+  const { access, refresh } = await generateAccessRefreshToken(user);
+
+  res
+    .status(200)
+    .cookie("accessToken", access, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "Strict",
+    })
+    .cookie("refreshToken", refresh, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "Strict",
+    });
+
+  const userInfo = await userModel
+    .findById(user._id)
+    .select("-password -refreshToken");
+  res
+    .status(200)
+    .json(
+      new ApiResponse(200, userInfo, "User logged in successfully with Google")
+    );
 });
