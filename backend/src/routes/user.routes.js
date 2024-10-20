@@ -4,7 +4,7 @@ import registerUser, {
   loginUser,
   logoutUser,
   forgetPassword,
-  resetPassword,
+  emailResetPassword,
   mobileRegister,
   emailRegister,
   googleLogin,
@@ -24,29 +24,7 @@ router
   .route("/auth/google")
   .get(passport.authenticate("google", { scope: ["profile", "email"] }));
 
-// router.route("/auth/google/callback").get((req, res, next) => {
-//   passport.authenticate(
-//     "google",
-//     { failureRedirect: "/login" },
-//     async (err, user, info) => {
-//       if (err) {
-//         console.error("Google authentication error:", err);
-//         return next(err); // Pass the error to the next middleware
-//       }
-//       if (!user) {
-//         return res.redirect("/login"); // Handle case where user is not authenticated
-//       }
-//       req.logIn(user, (loginErr) => {
-//         if (loginErr) {
-//           console.error("Login error:", loginErr);
-//           return next(loginErr); // Pass the error to the next middleware
-//         }
-//         // Successful login, redirect to desired location
-//         return res.redirect("/dashboard"); // Redirect to dashboard or appropriate route
-//       });
-//     }
-//   )(req, res, next);
-// });
+
 router
   .route("/auth/google/callback")
   .get(
@@ -60,7 +38,7 @@ router.route("/register/verifyOTP").post(verifyOTP);
 router.route("/register/verifyOTP/resendOTPCode").post(resendOTPCode);
 router.route("/login").post(loginUser);
 router.route("/forgetPassword").post(forgetPassword);
-router.route("/resetPassword").post(resetPassword);
+router.route("/emailResetPassword").post(emailResetPassword);
 router.route("/register/sendMobileOTP").post(mobileRegister);
 router.route("/register/verifyMobileOTP").post(verifyMobileOTP);
 router.route("/register/verifyMobileOTP/resendMobileOTP").post(resendMobileOTP);

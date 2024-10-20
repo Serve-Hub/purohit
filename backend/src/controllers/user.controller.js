@@ -219,7 +219,7 @@ export const forgetPassword = asyncHandler(async (req, res) => {
 
   res.status(200).json(new ApiResponse(200, {}, "Reset password email sent"));
 });
-export const resetPassword = asyncHandler(async (req, res) => {
+export const emailResetPassword = asyncHandler(async (req, res) => {
   const { email, otp, newPassword, confirmPassword } = req.body;
   const trimmedEmail = email?.trim();
   const trimmedOtp = otp?.trim();
@@ -242,6 +242,32 @@ export const resetPassword = asyncHandler(async (req, res) => {
   await OTP.deleteMany({ email });
   res.status(200).json(new ApiResponse(200, {}, "Password reset successful."));
 });
+
+export const mobileResetPassword = asyncHandler(async (req, res) => {
+
+  const { contact, otp, newPassword, confirmPassword } = req.body;
+  const trimmedContact = contact?.trim();
+  const trimmedOtp = otp?.trim();
+  if (!trimmedContact || !trimmedOtp || !newPassword || !confirmPassword) {
+    throw new ApiError(400, "All fields are required");
+  }
+  if (!newPassword === confirmPassword) {
+    throw new ApiError(400, "Password match failed");
+  }
+
+  const userOTP = await mobileOTP.findOne({
+    contact: trimmedContact,
+  });
+  const match = await verifyHashedData(otp, userOTP.otp);
+  if (!match) {
+    throw new ApiError(400, "Invalid OTP.");
+  }
+  const hashedPassword = await hashData(newPassword);
+  await User.updateOne({ contact }, { password: hashedPassword });
+  await mobileOTP.deleteMany({ contact });
+  res.status(200).json(new ApiResponse(200, {}, "Password reset successful."));
+})
+
 export const changeCurrentPassword = asyncHandler(async (req, res) => {
   const { oldPassword, newPassword, confirmPassword } = req.body;
 
