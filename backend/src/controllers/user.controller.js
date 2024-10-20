@@ -47,12 +47,15 @@ const registerUser = asyncHandler(async (req, res) => {
   if (hasEmptyField) {
     throw new ApiError(400, "All fields are required and cannot be empty.");
   }
-  const existingUser = await User.findOne({ trimmedEmail });
+  console.log(trimmedEmail);
+  const existingUser = await User.findOne({ email: trimmedEmail });
+
 
   //if email already exists throw error
   if (existingUser) {
     throw new ApiError(409, "User with email already exists");
   }
+
   const hashedPassword = await bcrypt.hash(password, 10);
   // const avatarLocalPath = req.file?.path;
 
@@ -65,7 +68,7 @@ const registerUser = asyncHandler(async (req, res) => {
     firstName: trimmedFirstName,
     lastName: trimmedLastName,
     password: hashedPassword,
-    contact: trimmedContact,
+    // contact: trimmedContact,
     // avatar: avatarLocalPath,
   });
 
@@ -92,13 +95,17 @@ export const emailRegister = asyncHandler(async (req, res) => {
 
   await sendEmail({ email: trimmedEmail });
 
-  return res.status(201).json(new ApiResponse(201, { token }, "OTP sent Success!"));
+  return res
+    .status(201)
+    .json(new ApiResponse(201, { token }, "OTP sent Success!"));
 });
 export const mobileRegister = asyncHandler(async (req, res) => {
-  const { token, contact } = req.body;
+  const { firstName, lastName, contact } = req.body;
   const trimmedContact = contact?.trim();
+  const trimmedFirstName = firstName?.trim();
+  const trimmedLastName = lastName?.trim();
 
-  if (!trimmedContact || !token) {
+  if (!trimmedContact || !trimmedFirstName || !trimmedLastName) {
     throw new ApiError(400, "All fields are required and cannot be empty.");
   }
 
@@ -108,9 +115,19 @@ export const mobileRegister = asyncHandler(async (req, res) => {
   if (existingUser) {
     throw new ApiError(409, "User with contact already exists");
   }
+  const { token } = generateOTPToken({
+    // email: trimmedEmail,
+    firstName: trimmedFirstName,
+    lastName: trimmedLastName,
+    password: hashedPassword,
+    contact: trimmedContact,
+    // avatar: avatarLocalPath,
+  });
   await sendMessage(trimmedContact);
 
-  return res.status(201).json(new ApiResponse(201, {}, "OTP sent Success!"));
+  return res
+    .status(201)
+    .json(new ApiResponse(201, { token }, "Registration Success!"));
 });
 
 export const loginUser = asyncHandler(async (req, res) => {
@@ -320,4 +337,45 @@ export const updateAccountDetails = asyncHandler(async (req, res) => {
   return res
     .status(200)
     .json(new ApiResponse(200, user, "Account details updated successfully."));
+});
+
+export const googleLogin = asyncHandler(async (req, res) => {
+  const user = req.user; // This is set by Passport during Google OAuth
+
+  if (!user) {
+    throw new ApiError(400, "Google login failed");
+  }
+
+  try {
+    const { access, refresh } = await generateAccessAndRefreshTokens(user);
+
+    res
+      .status(200)
+      .cookie("accessToken", access, {
+        httpOnly: true,
+        secure: true,
+        sameSite: "Strict",
+      })
+      .cookie("refreshToken", refresh, {
+        httpOnly: true,
+        secure: true,
+        sameSite: "Strict",
+      });
+
+    const userInfo = await User.findById(user._id).select(
+      "-password -refreshToken"
+    );
+    res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          userInfo,
+          "User logged in successfully with Google"
+        )
+      );
+  } catch (error) {
+    console.error("Error during Google login:", error);
+    throw new ApiError(500, "Internal server error during login");
+  }
 });
