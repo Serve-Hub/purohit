@@ -1,12 +1,14 @@
-// src/app/page.tsx
-import Image from 'next/image';
+import React from 'react'
 import Link from 'next/link';
+import Image from 'next/image';
 
-export default function LoginPage() {
+function login
+() {
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-white md:flex-row">
+    <div>
+        <div className="flex flex-col items-center justify-center min-h-screen bg-white md:flex-row">
       <div className="flex flex-col items-center justify-center md:w-1/2">
-        <Image src="/purohit-logo-04.png" alt="Purohit Logo" width={150} height={150} />
+        <img src="/purohit-logo-04.png" alt="Purohit Logo" width={150} height={150} />
         <h2 className="mt-4 text-2xl font-semibold text-center text-black">
           Your Personalized <span className="text-orange-600">Pandit</span> Service,<br /> 
           <span className="text-orange-600">Anytime, Anywhere</span>
@@ -19,10 +21,11 @@ export default function LoginPage() {
           <div className="mb-4">
             <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
             <input
-              type="email"
+              type="email text-black"
               id="email"
-              className="mt-1 block w-full border border-gray-300 rounded-md p-2"
+              className="mt-1 block w-full border border-gray-800 rounded-md p-2"
               placeholder="Enter your email"
+              style={{color: 'black'}}
             />
           </div>
           <div className="mb-4">
@@ -30,8 +33,9 @@ export default function LoginPage() {
             <input
               type="password"
               id="password"
-              className="mt-1 block w-full border border-gray-300 rounded-md p-2"
+              className="mt-1 block w-full border border-gray-800 rounded-md p-2"
               placeholder="********"
+              style={{color: 'black'}}
             />
           </div>
           <div className="flex items-center mb-4">
@@ -46,14 +50,19 @@ export default function LoginPage() {
             Sign in
           </button>
           <div className="mt-4 text-center">
-          <a href="/forgot-password" className="text-blue-600">Forgot password?</a>
+          <a href="/" className="text-blue-600">Forgot password?</a>
 
           </div>
           <div className="mt-4 text-center text-gray-500">
-            <p>Don't have an account? <Link href="/signup" className="text-blue-600">Sign up</Link></p>
+          <p>Don't have an account? <Link href="/Signup" className="text-blue-600">Sign up</Link></p>
+
+
           </div>
         </form>
       </div>
     </div>
-  );
+    </div>
+  )
 }
+
+export default login
