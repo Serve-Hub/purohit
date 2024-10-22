@@ -3,8 +3,12 @@ import { View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, ScrollVi
 import { FontAwesome } from '@expo/vector-icons';
 import googleLogo from '../Images/google.png';
 import logo from '../Images/logo.png';
-import CountryPicker from 'react-native-country-picker-modal'
+import CountryPicker from 'react-native-country-picker-modal';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Alert } from 'react-native';
+import { useMutation } from "@tanstack/react-query";
+import axios from 'axios';
+
 
 
 const PhoneSignupScreen = ({ navigation }) => {
@@ -14,7 +18,7 @@ const PhoneSignupScreen = ({ navigation }) => {
     const [showPassword, setShowPassword] = useState(false);
     const [phoneNumber, setPhoneNumber] = useState('');
     const [countryCode, setCountryCode] = useState('NP');
-    const [callingCode, setCallingCode] = useState('977');
+    const [callingCode, setCallingCode] = useState('+977');
     const [isValid, setIsValid] = useState(true);
     const [isPickerVisible, setPickerVisible] = useState(false);
 
@@ -57,22 +61,71 @@ const PhoneSignupScreen = ({ navigation }) => {
         }
     };
 
-
-    const handlePhoneNumberChange = (text) => {
-        setPhoneNumber(text);
-
+    // Phone number validation
+    const validatePhoneNumber = (text, callingCode) => {
+        console.log(callingCode, text)
+        setPhoneNumber(`${callingCode}${text}`); // Combine calling code with phone number
         // Basic phone number validation (checks for 10 digits)
         const phoneRegex = /^[0-9]{10}$/;
-        setIsValid(phoneRegex.test(text));
+        setIsValid(phoneRegex.test(text)); // Check only the entered digits, without calling code
     };
 
+    const registerMutation = useMutation({
+        mutationKey: "Register-user",
+        mutationFn: async (userdata) => {
+            return axios.post('http://192.168.1.4:6000/api/v1/users/register/sendMobileOTP', userdata, {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+        },
+
+        onSuccess: async (res) => {
+            const token = res.data.data.token;
+            const userData = { token, phoneNumber };
+            console.log("Token in frontend", token, phoneNumber);
+            await navigation.navigate("PhoneConfirmation", userData);
+        },
+
+        onError: (error) => {
+            if (error.response) {
+                if (error.response.status === 409) {
+                    // User already exists
+                    Alert.alert("Error", "User already exists with this number. Please log in or use a different number.");
+                } else {
+                    console.error("Error during registration:", error.response.data);
+                    Alert.alert("Error", error.response.data.message || "An error occurred during registration.");
+                }
+            } else {
+                console.error("Error during registration:", error.message);
+                Alert.alert("Error", error.message || "An error occurred during registration.");
+            }
+        },
+    });
+
+
+
     const handleSignup = () => {
-        if (isValid) {
-            console.log('Phone Number Submitted:', `+${callingCode} ${phoneNumber}`);
-            navigation.navigate('Confirmation');
-            // Handle the phone number submission logic here
+
+        if (!firstName || !lastName || !phoneNumber || !password) {
+            Alert.alert("Error", "Please fill all the fields");
+        }
+        else {
+            const userdata = {
+                firstName,
+                lastName,
+                phoneNumber,
+                password,
+            };
+
+            // Validate the form fields before sending the request
+            if (!firstNameError && !lastNameError && !passwordError) {
+                console.log("Form is valid! Proceeding with signup...");
+                registerMutation.mutate(userdata); // Use mutate to trigger the signup API call
+            }
         }
     };
+
 
     return (
         <SafeAreaView className="flex-1 bg-background">
@@ -131,7 +184,7 @@ const PhoneSignupScreen = ({ navigation }) => {
                                     visible={isPickerVisible}
                                     onClose={() => setPickerVisible(false)}
                                 />
-                                <Text className="ml-1">+{callingCode}</Text>
+                                <Text className="ml-1">{callingCode}</Text>
                             </TouchableOpacity>
 
                             {/* Phone Number Input Field */}
@@ -139,8 +192,8 @@ const PhoneSignupScreen = ({ navigation }) => {
                                 className="flex-1 text-lg py-1 px-2"
                                 placeholder="Enter your mobile number"
                                 keyboardType="numeric"
-                                value={phoneNumber}
-                                onChangeText={handlePhoneNumberChange}
+                                value={phoneNumber.replace(`${callingCode}`, '')}  // Display number without `+` and calling code
+                                onChangeText={(text) => validatePhoneNumber(text, callingCode)}
                             />
                         </View>
                         {!isValid && (
@@ -175,7 +228,7 @@ const PhoneSignupScreen = ({ navigation }) => {
                         </TouchableOpacity>
 
                         {/* Login Link */}
-                        <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+                        <TouchableOpacity onPress={() => navigation.navigate('PhoneLogin')}>
                             <Text className="text-blue-500 underline font-semibold text-sm mb-4">
                                 Already have an account?
                             </Text>
@@ -189,14 +242,15 @@ const PhoneSignupScreen = ({ navigation }) => {
                         </View>
 
                         {/* Social Login Buttons */}
-                        <TouchableOpacity className="bg-facebook w-full py-3 rounded-lg flex-row items-center mb-3">
+                        <TouchableOpacity className="bg-blue-500 w-full py-3 rounded-lg flex-row items-center mb-3" onPress={() => navigation.navigate('Signup')}>
                             <View className="w-1/6 flex items-center">
-                                <FontAwesome name="facebook" size={30} color="white" />
+                                <FontAwesome name="envelope" size={30} color="white" />
                             </View>
                             <View className="w-5/6">
-                                <Text className="text-white text-center text-lg font-semibold">Continue with Facebook</Text>
+                                <Text className="text-white text-center text-lg font-semibold">Continue with Email</Text>
                             </View>
                         </TouchableOpacity>
+
 
                         <TouchableOpacity className="bg-google w-full py-3 rounded-lg flex-row items-center mb-3 border border-gray-400">
                             <View className="w-1/6 flex items-center">

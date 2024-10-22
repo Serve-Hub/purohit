@@ -7,37 +7,38 @@ import logo from '../Images/logo.png';
 import axios from 'axios';
 import { Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import CountryPicker from 'react-native-country-picker-modal';
 
 
-const LoginScreen = ({ navigation }) => {
-    const [email, setEmail] = useState('');
+const PhoneLogin = ({ navigation }) => {
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
+    const [phoneNumber, setPhoneNumber] = useState('');
+    const [countryCode, setCountryCode] = useState('NP');
+    const [callingCode, setCallingCode] = useState('+977');
+    const [isValid, setIsValid] = useState(true);
+    const [isPickerVisible, setPickerVisible] = useState(false);
 
-    const [emailError, setEmailError] = useState('');
-
-    // Email Validation
-    const validateEmail = (value) => {
-        setEmail(value);
-        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!value.match(emailPattern)) {
-            setEmailError("Please enter a valid email address.");
-        } else {
-            setEmailError('');
-        }
+    // Phone number Validation
+    const validatePhoneNumber = (text, callingCode) => {
+        console.log(callingCode, text)
+        setPhoneNumber(`${callingCode}${text}`); // Combine calling code with phone number
+        // Basic phone number validation (checks for 10 digits)
+        const phoneRegex = /^[0-9]{10}$/;
+        setIsValid(phoneRegex.test(text)); // Check only the entered digits, without calling code
     };
 
     // Login Functionality
     const handleLogin = async () => {
-        if (!email || !password) {
+        if (!phoneNumber || !password) {
             Alert.alert("Error", "Please fill in both email and password.");
             return;
         } else {
-            
+
             try {
                 // console.log("Hello");
                 const response = await axios.post('http://192.168.1.4:6000/api/v1/users/login', {
-                    email,
+                    phoneNumber,
                     password
                 });
 
@@ -53,9 +54,9 @@ const LoginScreen = ({ navigation }) => {
         }
     };
 
-    const handleforgotpassword = async () =>{
-        navigation.navigate('EmailForgotPassword');
-        }
+    const handleforgotpassword = async () => {
+        navigation.navigate('PhoneForgotPassword');
+    }
 
     return (
         <SafeAreaView className="flex-1 bg-white">
@@ -75,16 +76,38 @@ const LoginScreen = ({ navigation }) => {
                             <Text className="text-2xl font-bold text-center">Welcome Back!</Text>
                         </View>
 
-                        {/* Email Input */}
-                        <View className="mb-3 w-full">
+                        {/* Phone Number Input */}
+                        <View className="flex-row items-center border border-borders rounded-lg px-3 py-2 mb-3 w-full">
+                            {/* Country Picker */}
+                            <TouchableOpacity onPress={() => setPickerVisible(true)} className="flex-row items-center mr-3">
+                                <CountryPicker
+                                    countryCode={countryCode}
+                                    withFilter
+                                    withFlag
+                                    withCallingCode
+                                    withEmoji
+                                    onSelect={(country) => {
+                                        setCountryCode(country.cca2);
+                                        setCallingCode(country.callingCode[0]);
+                                    }}
+                                    visible={isPickerVisible}
+                                    onClose={() => setPickerVisible(false)}
+                                />
+                                <Text className="ml-1">{callingCode}</Text>
+                            </TouchableOpacity>
+
+                            {/* Phone Number Input Field */}
                             <TextInput
-                                placeholder="Enter Your Email"
-                                className="border border-borders rounded-lg w-full py-3 px-4"
-                                value={email}
-                                onChangeText={validateEmail}
+                                className="flex-1 text-lg py-1 px-2"
+                                placeholder="Enter your mobile number"
+                                keyboardType="numeric"
+                                value={phoneNumber.replace(`${callingCode}`, '')}  // Display number without `+` and calling code
+                                onChangeText={(text) => validatePhoneNumber(text, callingCode)}
                             />
-                            {emailError ? <Text className="text-error-message text-sm">{emailError}</Text> : null}
                         </View>
+                        {!isValid && (
+                            <Text className="text-error-message text-sm mb-2">This phone number is invalid</Text>
+                        )}
 
                         {/* Password Input with Show/Hide */}
                         <View className="border border-borders rounded-lg w-full py-3 px-4 mb-3 flex-row items-center">
@@ -115,7 +138,7 @@ const LoginScreen = ({ navigation }) => {
                         </TouchableOpacity>
 
                         {/* Signup Link */}
-                        <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
+                        <TouchableOpacity onPress={() => navigation.navigate('PhoneSignup')}>
                             <Text className="text-blue-500 underline font-semibold text-sm mb-4">
                                 Don't have an account?
                             </Text>
@@ -129,14 +152,15 @@ const LoginScreen = ({ navigation }) => {
                         </View>
 
                         {/* Social Login Buttons */}
-                        {/* <TouchableOpacity className="bg-facebook w-full py-3 rounded-lg flex-row items-center mb-3">
+                        <TouchableOpacity className="bg-blue-500 w-full py-3 rounded-lg flex-row items-center mb-3" onPress={() => navigation.navigate('Signup')}>
                             <View className="w-1/6 flex items-center">
-                                <FontAwesome name="facebook" size={30} color="white" />
+                                <FontAwesome name="envelope" size={30} color="white" />
                             </View>
                             <View className="w-5/6">
-                                <Text className="text-white text-center text-lg font-semibold">Login with Facebook</Text>
+                                <Text className="text-white text-center text-lg font-semibold">Continue with Email</Text>
                             </View>
-                        </TouchableOpacity> */}
+                        </TouchableOpacity>
+
 
                         <TouchableOpacity className="bg-google w-full py-3 rounded-lg flex-row items-center mb-3 border border-gray-400">
                             <View className="w-1/6 flex items-center">
@@ -150,14 +174,6 @@ const LoginScreen = ({ navigation }) => {
                             </View>
                         </TouchableOpacity>
 
-                        <TouchableOpacity className="bg-phone w-full py-3 rounded-lg flex-row items-center mb-3" onPress={() => navigation.navigate('PhoneLogin')}>
-                            <View className="w-[15%] flex items-center">
-                                <FontAwesome name="phone" size={30} color="white" />
-                            </View>
-                            <View className="w-[85%]">
-                                <Text className="text-white text-center text-base font-semibold">Continue with Phone</Text>
-                            </View>
-                        </TouchableOpacity>
                     </View>
                 </ScrollView>
             </KeyboardAvoidingView>
@@ -165,4 +181,4 @@ const LoginScreen = ({ navigation }) => {
     );
 };
 
-export default LoginScreen;
+export default PhoneLogin;

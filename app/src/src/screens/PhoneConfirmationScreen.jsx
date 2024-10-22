@@ -4,7 +4,7 @@ import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
 import { Alert } from 'react-native';
 
-const EmailConfirmation = ({ route, navigation }) => {
+const PhoneConfirmation = ({ route, navigation }) => {
     const [code, setCode] = useState(""); // Store the entire code
     const inputRef = useRef(null); // Ref for the hidden input
 
@@ -15,25 +15,25 @@ const EmailConfirmation = ({ route, navigation }) => {
         }
     };
 
-    const { token, email } = route.params;
+    const { token, phoneNumber } = route.params;
     const [isSendVisible, setIsSendVisible] = useState(true); // "Send code" button is initially visible
     const [isResendVisible, setIsResendVisible] = useState(false); // "Resend code" button is initially hidden
     const [otpSent, setOtpSent] = useState(false);
 
-    console.log(token, email);
+    console.log(token, phoneNumber);
     // Mutation to send or resend OTP
     const sendOtpMutation = useMutation({
-        mutationFn: async ({ email, token, isResend }) => {
+        mutationFn: async ({ phoneNumber, token, isResend }) => {
 
             // Use different endpoints depending on whether it's a send or resend action
             const endpoint = isResend
-                ? 'http://192.168.1.4:6000/api/v1/users/register/verifyOTP/resendOTPCode'
-                : 'http://192.168.1.4:6000/api/v1/users/register/sendEmailOTP';
+                ? 'http://192.168.1.4:6000/api/v1/users/register/verifyMobileOTP/resendMobileOTP'
+                : 'http://192.168.1.4:6000/api/v1/users/register/sendMobileOTP';
 
 
             return axios.post(
                 endpoint,
-                { email, token },
+                { phoneNumber, token },
                 {
                     headers: {
                         'Content-Type': 'application/json',
@@ -43,7 +43,7 @@ const EmailConfirmation = ({ route, navigation }) => {
         },
         onSuccess: (response) => {
             console.log("OTP sent successfully:");
-            Alert.alert("Success", "OTP sent to your email address.");
+            Alert.alert("Success", "OTP sent to your Mobile.");
             // Set the flag to true after sending OTP
             setOtpSent(true);
         },
@@ -56,8 +56,8 @@ const EmailConfirmation = ({ route, navigation }) => {
 
     // Function to send OTP
     const sendOTP = async (isResend = false) => {
-        if (email && token) {
-            sendOtpMutation.mutate({ email, token,  isResend});
+        if (phoneNumber && token) {
+            sendOtpMutation.mutate({ phoneNumber, token,  isResend});
 
 
             setIsSendVisible(false); // Hide the "Send code" button after pressing it
@@ -68,7 +68,7 @@ const EmailConfirmation = ({ route, navigation }) => {
     const verifyOtpMutation = useMutation({
         mutationFn: async (userdata) => {
             return axios.post(
-                'http://192.168.1.4:6000/api/v1/users/register/verifyOTP', // Replace with your actual verification endpoint
+                'http://192.168.1.4:6000/api/v1/users/register/verifyMobileOTP', // Replace with your actual verification endpoint
                 userdata,
                 {
                     headers: {
@@ -137,7 +137,7 @@ const EmailConfirmation = ({ route, navigation }) => {
                 {isResendVisible && (
                     <View>
                         <Text className="text-center font-semibold text-gray-500 text-sm mb-9">
-                            A 4-digit code was sent to your Email.
+                            A 4-digit code was sent to your Phone.
                         </Text>
                         <TouchableOpacity onPress={() => sendOTP(true)} accessible={true} accessibilityLabel="Resend code">
                             <Text className="text-center text-blue-500 font-bold text-sm mb-8">Resend code</Text>
@@ -154,4 +154,4 @@ const EmailConfirmation = ({ route, navigation }) => {
     );
 };
 
-export default EmailConfirmation;
+export default PhoneConfirmation;

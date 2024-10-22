@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Image, KeyboardAvoidingView, ScrollView } from 'react-native';
-import { Icon } from 'react-native-elements';
+// import { Icon } from 'react-native-elements';
 import { FontAwesome } from '@expo/vector-icons';
 import googleLogo from '../Images/google.png';
 import logo from '../Images/logo.png';
@@ -71,7 +71,7 @@ const SignupPage = ({ navigation }) => {
     const registerMutation = useMutation({
         mutationKey: "Register-user",
         mutationFn: async (userdata) => {
-            return axios.post('http://192.168.1.64:6000/api/v1/users/register', userdata, {
+            return axios.post('http://192.168.1.4:6000/api/v1/users/register', userdata, {
                 headers: {
                     'Content-Type': 'application/json',
                 },
@@ -81,6 +81,7 @@ const SignupPage = ({ navigation }) => {
         onSuccess: async (res) => {
             const token = res.data.data.token;
             const userData = { token, email };
+            console.log("Token in frontend" ,token, email);
             await navigation.navigate("EmailConfirmation", userData);
         },
 
@@ -218,14 +219,14 @@ const SignupPage = ({ navigation }) => {
                         </View>
 
                         {/* Social Login Buttons */}
-                        <TouchableOpacity className="bg-facebook w-full py-3 rounded-lg flex-row items-center mb-3">
+                        {/* <TouchableOpacity className="bg-facebook w-full py-3 rounded-lg flex-row items-center mb-3">
                             <View className="w-1/6 flex items-center">
                                 <FontAwesome name="facebook" size={30} color="white" />
                             </View>
                             <View className="w-5/6">
                                 <Text className="text-white text-center text-lg font-semibold">Continue with Facebook</Text>
                             </View>
-                        </TouchableOpacity>
+                        </TouchableOpacity> */}
 
                         <TouchableOpacity className="bg-google w-full py-3 rounded-lg flex-row items-center mb-3 border border-gray-400">
                             <View className="w-1/6 flex items-center">
@@ -239,7 +240,7 @@ const SignupPage = ({ navigation }) => {
                             </View>
                         </TouchableOpacity>
 
-                        <TouchableOpacity className="bg-phone w-full py-3 rounded-lg flex-row items-center mb-3" onPress={() => navigation.navigate('Phone')}>
+                        <TouchableOpacity className="bg-phone w-full py-3 rounded-lg flex-row items-center mb-3" onPress={() => navigation.navigate('PhoneSignup')}>
                             <View className="w-[15%] flex items-center">
                                 <FontAwesome name="phone" size={30} color="white" />
                             </View>
