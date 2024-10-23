@@ -3,7 +3,6 @@ import registerUser, {
   refreshAccessToken,
   loginUser,
   logoutUser,
-  forgetPassword,
   emailResetPassword,
   mobileRegister,
   emailRegister,
@@ -38,7 +37,6 @@ router.route("/register/verifyOTP").post(verifyOTP);
 router.route("/register/verifyOTP/resendOTPCode").post(resendOTPCode);
 router.route("/login").post(loginUser);
 router.route("/login/phone").post(loginPhoneUser);
-router.route("/forgetPassword").post(forgetPassword);
 router.route("/emailResetPassword").post(emailResetPassword);
 router.route("/register/sendMobileOTP").post(mobileRegister);
 router.route("/register/verifyMobileOTP").post(verifyMobileOTP);

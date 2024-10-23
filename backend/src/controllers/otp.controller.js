@@ -1,6 +1,7 @@
 import jwt from "jsonwebtoken";
 import ApiError from "../utils/ApiError.js";
 import { sendEmail } from "../utils/mailer.js";
+import sendMessage from "../utils/messageSender.js";
 import uploadOnCloudinary from "../utils/cloudinary.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import User from "../models/user.model.js";
@@ -14,7 +15,7 @@ import { verifyHashedData } from "../utils/hashData.js";
 export const verifyOTP = asyncHandler(async (req, res) => {
   const { token, otp } = req.body;
   if (!token || !otp) {
-    throw new ApiError(400, "Empty opt details are not allowed");
+    throw new ApiError(400, "Empty  details are not allowed");
   }
   try {
     const decoded = jwt.verify(token, process.env.OTP_SECRET);

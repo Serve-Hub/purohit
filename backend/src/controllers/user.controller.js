@@ -245,26 +245,6 @@ export const logoutUser = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, {}, "User logged Out"));
 });
 
-export const forgetPassword = asyncHandler(async (req, res) => {
-  const { email } = req.body;
-  if (!email) {
-    throw new ApiError(400, "Email is required");
-  }
-
-  const user = await User.findOne({ email });
-  if (!user) {
-    throw new ApiError(404, "User not found");
-  }
-
-  if (!user.isVerified) {
-    throw new ApiError(400, "User is not verified");
-  }
-
-  await sendEmail({ email });
-
-  res.status(200).json(new ApiResponse(200, {}, "Reset password email sent"));
-});
-
 export const emailResetPassword = asyncHandler(async (req, res) => {
   const { email, otp, newPassword, confirmPassword } = req.body;
   const trimmedEmail = email?.trim();
