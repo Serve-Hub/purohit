@@ -2,6 +2,7 @@ import jwt from "jsonwebtoken";
 import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import { sendEmail } from "../utils/mailer.js";
+import sendMessage from "../utils/messageSender.js";
 import uploadOnCloudinary from "../utils/cloudinary.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import User from "../models/user.model.js";
@@ -16,15 +17,15 @@ export const verifyOTP = asyncHandler(async (req, res) => {
   const { token, otp } = req.body;
   console.log("token in backend",token,otp)
   if (!token || !otp) {
-    throw new ApiError(400, "Empty opt details are not allowed");
+    throw new ApiError(400, "Empty  details are not allowed");
   }
   try {
     const decoded = jwt.verify(token, process.env.OTP_SECRET);
     const userOTP = await OTP.findOne({
       email: decoded.email || decoded.userData.email,
     });
-    console.log("opt=",otp,"userOTP= ", userOTP.otp)
-    const match =  await bcrypt.compare(otp, userOTP.otp);
+    console.log("opt=", otp, "userOTP= ", userOTP.otp);
+    const match = await bcrypt.compare(otp, userOTP.otp);
     console.log(match);
     if (!match) {
       throw new ApiError(400, "Invalid OTP.");
@@ -42,7 +43,8 @@ export const verifyOTP = asyncHandler(async (req, res) => {
       firstName: decoded.firstName || decoded.userData.firstName,
       lastName: decoded.lastName || decoded.userData.lastName,
       password: decoded.password || decoded.userData.password,
-      // contact: decoded.contact || decoded.userData.contact|| null,
+      contact: null,
+      googleId: null,
       // avatar: decoded.avatar || decoded.userData.avatar,
       isVerified: true, // Mark the user as verified
     });
@@ -98,7 +100,6 @@ export const resendOTPCode = asyncHandler(async (req, res) => {
   });
 });
 
-
 export const verifyMobileOTP = asyncHandler(async (req, res) => {
   const { token, otp } = req.body;
   if (!token || !otp) {
@@ -122,11 +123,12 @@ export const verifyMobileOTP = asyncHandler(async (req, res) => {
     throw new ApiError(409, "User with this contact already exists.");
   }
   const user = new User({
-    // email: decoded.email,
+    email: null,
     firstName: decoded.firstName,
     lastName: decoded.lastName,
     password: decoded.password,
     contact: decoded.contact,
+    googleId: null,
     // avatar: decoded.avatar,
     isVerified: true,
   });

@@ -33,20 +33,16 @@ const userSchema = new Schema(
     },
     password: {
       type: String,
-      required: [true, "Password is required"],
+      required: false,
       trim: true,
     },
     contact: {
       type: String,
       required: false,
-      validate: {
-        validator: (v) => {
-          if (!v) return true; // Allow null/undefined values
-          return /^\+?[0-9]{10,15}$/.test(v); // Validate if there's a value
-        },
-        message: (props) => `${props.value} is not a valid phone number!`,
-      },
+      sparse: true,
+      unique: true,
     },
+    googleId: { type: String, unique: true, sparse: true },
     isVerified: {
       type: Boolean,
       default: false,
@@ -54,7 +50,8 @@ const userSchema = new Schema(
     isAdmin: {
       type: Boolean,
       default: false,
-    },googleId: { type: String, unique: true },
+    },
+    googleId: { type: String, unique: true, sparse: true },
     // forgotPasswordToken: String,
     // forgotPasswordTokenExpiry: Date,
     // verifyToken: String,
