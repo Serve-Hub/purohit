@@ -26,6 +26,9 @@ const createTransport = async () => {
       refreshToken: process.env.OAUTH_REFRESH_TOKEN,
       accessToken,
     },
+    tls: {
+      rejectUnauthorized: false, // Allow self-signed certificates in local dev
+    },
   });
 };
 
