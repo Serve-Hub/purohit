@@ -174,6 +174,52 @@ export const loginUser = asyncHandler(async (req, res) => {
     );
 });
 
+export const loginPhoneUser = asyncHandler(async (req, res) => {
+  const { contact, password } = req.body;
+  const trimmedContact = contact?.trim();
+  if (!password && !trimmedContact) {
+    throw new ApiError(400, "Fields cannot be empty");
+  }
+
+  const user = await User.findOne({ contact: trimmedContact });
+  if (!user) {
+    return res.status(400).send({ error: "User does not exist." });
+  }
+  if (!user.isVerified) {
+    return res.status(400).send({ error: "User is not verified." });
+  }
+  const isPasswordValid = await user.isPasswordCorrect(password);
+  if (!isPasswordValid) {
+    return res.status(401).send({ error: "Invalid user credentials." });
+  }
+
+  const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(
+    user._id
+  );
+
+  const loggedInUser = await User.findById(user._id).select(
+    "-password -refreshToken"
+  );
+
+  const options = {
+    httpOnly: true,
+    secure: true,
+  };
+
+  return res
+    .status(200)
+    .cookie("accessToken", accessToken, options)
+    .cookie("refreshToken", refreshToken, options)
+    .json(
+      new ApiResponse(
+        200,
+        { user: loggedInUser, accessToken, refreshToken },
+        "User logged in successfully"
+      )
+    );
+});
+
+
 export const logoutUser = asyncHandler(async (req, res) => {
   await User.findByIdAndUpdate(
     req.user._id,

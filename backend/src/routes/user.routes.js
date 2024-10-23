@@ -8,6 +8,7 @@ import registerUser, {
   mobileRegister,
   emailRegister,
   googleLogin,
+  loginPhoneUser,
 } from "../controllers/user.controller.js";
 import {
   verifyOTP,
@@ -24,7 +25,6 @@ router
   .route("/auth/google")
   .get(passport.authenticate("google", { scope: ["profile", "email"] }));
 
-
 router
   .route("/auth/google/callback")
   .get(
@@ -37,6 +37,7 @@ router.route("/register/sendEmailOTP").post(emailRegister);
 router.route("/register/verifyOTP").post(verifyOTP);
 router.route("/register/verifyOTP/resendOTPCode").post(resendOTPCode);
 router.route("/login").post(loginUser);
+router.route("/login/phone").post(loginPhoneUser);
 router.route("/forgetPassword").post(forgetPassword);
 router.route("/emailResetPassword").post(emailResetPassword);
 router.route("/register/sendMobileOTP").post(mobileRegister);
