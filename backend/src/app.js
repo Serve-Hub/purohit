@@ -20,6 +20,10 @@ app.use(
     cookie: { secure: false },
   })
 );
+app.get('/', (req, res) => {
+  res.send('Hello, World!');
+});
+
 
 app.use(passport.initialize());
 app.use(passport.session());
