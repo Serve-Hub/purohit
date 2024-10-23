@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
 import ApiError from "../utils/ApiError.js";
+import ApiResponse from "../utils/ApiResponse.js";
 import { sendEmail } from "../utils/mailer.js";
 import sendMessage from "../utils/messageSender.js";
 import uploadOnCloudinary from "../utils/cloudinary.js";
@@ -14,6 +15,7 @@ import { verifyHashedData } from "../utils/hashData.js";
 
 export const verifyOTP = asyncHandler(async (req, res) => {
   const { token, otp } = req.body;
+  console.log("token in backend",token,otp)
   if (!token || !otp) {
     throw new ApiError(400, "Empty  details are not allowed");
   }
@@ -55,8 +57,8 @@ export const verifyOTP = asyncHandler(async (req, res) => {
     await OTP.deleteMany({ email: user.email });
     return res
       .status(200)
-      .json({ message: "Email verified successfully, user created." });
-  } catch (error) {
+      .json(new ApiResponse(201,{}, "sucess otp verification"));
+    } catch (error) {
     throw new ApiError(400, error.message);
   }
 });

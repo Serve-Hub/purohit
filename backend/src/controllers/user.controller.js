@@ -29,6 +29,7 @@ const generateAccessAndRefreshTokens = async (userId) => {
 };
 
 const registerUser = asyncHandler(async (req, res) => {
+  console.log("la register ma xu ")
   const { email, firstName, lastName, password, contact } = req.body;
   const trimmedEmail = email?.trim();
   const trimmedFirstName = firstName?.trim();
@@ -130,7 +131,8 @@ export const mobileRegister = asyncHandler(async (req, res) => {
 });
 
 export const loginUser = asyncHandler(async (req, res) => {
-  const { email, password } = req.body;
+  const { email,password} = req.body;
+  console.log("email and password in login",email,password)
   const trimmedEmail = email?.trim();
   if (!password && !trimmedEmail) {
     throw new ApiError(400, "Fields cannot be empty");
