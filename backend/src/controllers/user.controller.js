@@ -50,7 +50,6 @@ const registerUser = asyncHandler(async (req, res) => {
   console.log(trimmedEmail);
   const existingUser = await User.findOne({ email: trimmedEmail });
 
-
   //if email already exists throw error
   if (existingUser) {
     throw new ApiError(409, "User with email already exists");
@@ -100,15 +99,15 @@ export const emailRegister = asyncHandler(async (req, res) => {
     .json(new ApiResponse(201, { token }, "OTP sent Success!"));
 });
 export const mobileRegister = asyncHandler(async (req, res) => {
-  const { firstName, lastName, contact } = req.body;
+  const { firstName, lastName, password, contact } = req.body;
   const trimmedContact = contact?.trim();
   const trimmedFirstName = firstName?.trim();
   const trimmedLastName = lastName?.trim();
 
-  if (!trimmedContact || !trimmedFirstName || !trimmedLastName) {
+  if (!trimmedContact || !trimmedFirstName || !trimmedLastName || !password) {
     throw new ApiError(400, "All fields are required and cannot be empty.");
   }
-
+  const hashedPassword = await bcrypt.hash(password, 10);
   const existingUser = await User.findOne({ contact: trimmedContact });
 
   //if email already exists throw error
@@ -116,7 +115,7 @@ export const mobileRegister = asyncHandler(async (req, res) => {
     throw new ApiError(409, "User with contact already exists");
   }
   const { token } = generateOTPToken({
-    // email: trimmedEmail,
+    // email: null,
     firstName: trimmedFirstName,
     lastName: trimmedLastName,
     password: hashedPassword,
@@ -219,6 +218,7 @@ export const forgetPassword = asyncHandler(async (req, res) => {
 
   res.status(200).json(new ApiResponse(200, {}, "Reset password email sent"));
 });
+
 export const emailResetPassword = asyncHandler(async (req, res) => {
   const { email, otp, newPassword, confirmPassword } = req.body;
   const trimmedEmail = email?.trim();
@@ -244,7 +244,6 @@ export const emailResetPassword = asyncHandler(async (req, res) => {
 });
 
 export const mobileResetPassword = asyncHandler(async (req, res) => {
-
   const { contact, otp, newPassword, confirmPassword } = req.body;
   const trimmedContact = contact?.trim();
   const trimmedOtp = otp?.trim();
@@ -266,7 +265,7 @@ export const mobileResetPassword = asyncHandler(async (req, res) => {
   await User.updateOne({ contact }, { password: hashedPassword });
   await mobileOTP.deleteMany({ contact });
   res.status(200).json(new ApiResponse(200, {}, "Password reset successful."));
-})
+});
 
 export const changeCurrentPassword = asyncHandler(async (req, res) => {
   const { oldPassword, newPassword, confirmPassword } = req.body;

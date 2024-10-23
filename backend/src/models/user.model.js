@@ -40,6 +40,7 @@ const userSchema = new Schema(
       type: String,
       required: false,
       sparse: true,
+      unique: true,
     },
     googleId: { type: String, unique: true, sparse: true },
     isVerified: {
@@ -50,7 +51,7 @@ const userSchema = new Schema(
       type: Boolean,
       default: false,
     },
-    googleId: { type: String, unique: true },
+    googleId: { type: String, unique: true, sparse: true },
     // forgotPasswordToken: String,
     // forgotPasswordTokenExpiry: Date,
     // verifyToken: String,

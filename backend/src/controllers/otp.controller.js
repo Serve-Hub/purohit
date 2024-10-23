@@ -21,8 +21,8 @@ export const verifyOTP = asyncHandler(async (req, res) => {
     const userOTP = await OTP.findOne({
       email: decoded.email || decoded.userData.email,
     });
-    console.log("opt=",otp,"userOTP= ", userOTP.otp)
-    const match =  await bcrypt.compare(otp, userOTP.otp);
+    console.log("opt=", otp, "userOTP= ", userOTP.otp);
+    const match = await bcrypt.compare(otp, userOTP.otp);
     console.log(match);
     if (!match) {
       throw new ApiError(400, "Invalid OTP.");
@@ -40,7 +40,8 @@ export const verifyOTP = asyncHandler(async (req, res) => {
       firstName: decoded.firstName || decoded.userData.firstName,
       lastName: decoded.lastName || decoded.userData.lastName,
       password: decoded.password || decoded.userData.password,
-      // contact: decoded.contact || decoded.userData.contact|| null,
+      contact: null,
+      googleId: null,
       // avatar: decoded.avatar || decoded.userData.avatar,
       isVerified: true, // Mark the user as verified
     });
@@ -96,7 +97,6 @@ export const resendOTPCode = asyncHandler(async (req, res) => {
   });
 });
 
-
 export const verifyMobileOTP = asyncHandler(async (req, res) => {
   const { token, otp } = req.body;
   if (!token || !otp) {
@@ -120,11 +120,12 @@ export const verifyMobileOTP = asyncHandler(async (req, res) => {
     throw new ApiError(409, "User with this contact already exists.");
   }
   const user = new User({
-    // email: decoded.email,
+    email: null,
     firstName: decoded.firstName,
     lastName: decoded.lastName,
     password: decoded.password,
     contact: decoded.contact,
+    googleId: null,
     // avatar: decoded.avatar,
     isVerified: true,
   });
